@@ -2,61 +2,67 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);  
-void processInput(GLFWwindow *window);
-
-const unsigned int WIDTH = 800;
-const unsigned int HEIGHT = 600;
-
-int main()
+int main(void)
 {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-    
-    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", NULL, NULL);
-    if (window == NULL)
+    /* Initialize the library */
+    if (!glfwInit()) 
     {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
+        std::cout << "GLFW initialization failed" << std::endl;
         return -1;
     }
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    
+    /* Create a windowed mode window and its OpenGL context */
+    GLFWwindow* window;
+    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    if (!window)
+    {
+        glfwTerminate();
+        std::cout << "Failed to create a window" << std::endl;
+        return -1;
+    }
+
+    /* Make the window's context current */
+    glfwMakeContextCurrent(window);
+
+    /* GLAD loads all OpenGL function pointers */
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
-    }   
+    }    
 
-    while(!glfwWindowShouldClose(window))
+    std::cout << glGetString(GL_VERSION) << std::endl;
+
+    /* Triangle stuff */
+    float positions[6] = {
+        -0.5f, -0.5f,
+        0.0f, 0.5f,
+        0.5f, -0.5f
+    };
+    unsigned int buffer;
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, 6*sizeof(positions[0]), positions, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(positions[0]), 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    /* Loop until the user closes the window */
+    while (!glfwWindowShouldClose(window))
     {
-        processInput(window);
-
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
+        /* Draw call to draw a triangle with default fragment shaders if GPU allows */
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        /* Swap front and back buffers */
         glfwSwapBuffers(window);
-        glfwPollEvents();  
+
+        /* Poll for and process events */
+        glfwPollEvents();
     }
 
     glfwTerminate();
     return 0;
-}
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    glViewport(0, 0, width, height);
-} 
-
-void processInput(GLFWwindow *window)
-{
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
 }
