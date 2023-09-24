@@ -46,13 +46,51 @@ int main(void)
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(positions[0]), 0);
     glEnableVertexAttribArray(0);
 
+    /* Shaders */
+    // VERTEX
+    const char* vertexShaderSource = R"(#version 330 core
+    layout (location = 0) in vec2 aPos;
+    void main()
+    {
+        gl_Position = vec4(aPos, 0.0, 1.0);
+    }
+    )";
+    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glCompileShader(vertexShader);
+
+    // FRAGMENT
+    const char* fragmentShaderSource = R"(#version 330 core
+    out vec4 FragColor;
+    void main()
+    {
+        FragColor = vec4(0.5f, 0.1f, 0.8f, 1.0f);
+    }
+    )";
+    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glCompileShader(fragmentShader);
+
+    // LINK SHADERS INTO A PROGRAM
+    GLuint shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    // DELETE SHADERS
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
-        /* Draw call to draw a triangle with default fragment shaders if GPU allows */
+        // Use shader program for rendering
+        glUseProgram(shaderProgram);
+
+        // Draw call to draw a triangle
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
         /* Swap front and back buffers */
